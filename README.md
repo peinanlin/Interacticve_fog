@@ -1,17 +1,4 @@
-# Interacter Fog
-
-Unity project for interactive fog rendering and visual-quality comparison.
-
-## Overview
-
-This project explores interactive fog effects, including scene interaction and comparisons across different rendering-quality settings. Screenshots, GIFs, and other result media will be collected in [`Results/`](Results/).
-
-## Highlights
-
-- Interactive fog effects in Unity
-- Configurable rendering and visual-quality settings
-- Side-by-side quality comparison results
-- Space for demonstration images and GIFs
+# 可交互体积雾--分档画质实现
 
 ## Requirements
 
@@ -42,7 +29,7 @@ Add screenshots or GIFs to [`Results/interaction/`](Results/interaction/) and em
 ![Interactive fog demo](Results/interaction/your-demo.gif)
 ```
 
-### Multi-quality comparison
+### 不同画质对比
 下面不同画质对比可能不是很明显，可点击图片放大看，低中画质由于分辨率的降低，明显能看到锯齿形状
 | | High / 高画质 | Medium / 中画质 | Low / 低画质 |
 | --- | --- | --- | --- |
@@ -57,10 +44,4 @@ Measured with Unity Profiler in Editor Play Mode. Each preset was captured for 3
 
 Place GIFs in [`Results/gif/`](Results/gif/). Keep large videos or build artifacts outside Git, or publish them through GitHub Releases/LFS when needed.
 
-## Status
 
-The repository is being prepared for public release. Experimental results and performance measurements will be added as they are finalized.
-
-## License
-
-License to be added.
