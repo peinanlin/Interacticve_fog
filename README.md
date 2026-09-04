@@ -36,11 +36,25 @@ Results/                交互演示、画质对比和 GIF
 
 ### 交互效果
 
-可以将截图或 GIF 放入 [`Results/interaction/`](Results/interaction/)，并按下面的方式嵌入：
+下面是项目中的交互效果演示：
+
+<p align="center">
+  <img src="Img/交互效果.gif" width="800" alt="交互式体积雾效果演示">
+</p>
+
+后续截图或 GIF 可以放入 [`Results/interaction/`](Results/interaction/)，并按下面的方式嵌入：
 
 ```markdown
 ![交互式体积雾演示](Results/interaction/your-demo.gif)
 ```
+
+### 雾的渲染表现
+
+下图展示体积雾的整体渲染表现：
+
+<p align="center">
+  <img src="Img/雾的渲染.png" width="800" alt="体积雾渲染表现">
+</p>
 
 ### 多画质对比
 
