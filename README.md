@@ -48,6 +48,16 @@ Results/                交互演示、画质对比和 GIF
 ![交互式体积雾演示](Results/interaction/your-demo.gif)
 ```
 
+### 交互纹理实时 Debug
+
+下面的 Debug 工具用于实时查看交互过程中保存的流体纹理，帮助确认交互数据是否正确写入并参与体积雾渲染：
+
+<p align="center">
+  <img src="Img/debug工具.png" width="800" alt="交互纹理实时 Debug 工具">
+</p>
+
+Debug 窗口可以预览 **Density（密度）**、**Velocity（速度）**、**ExternalForce（外力）**、**Pressure（压力）** 和 **Curl（旋度）** 等纹理。通过调整预览尺寸、跟随交互源高度和 3D 切片位置，可以检查交互纹理在不同位置和切片下的实时变化；底部的交互源类型选项用于筛选要显示的交互来源。
+
 ### 雾的渲染表现
 
 下图展示体积雾的整体渲染表现：
