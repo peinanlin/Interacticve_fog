@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c55f40dc7b24da9a8237cc11ad7b529, type: 3}
+  m_Name: InteractiveFogHigh
+  m_EditorClassIdentifier: 
+  schemaVersion: 1
+  tier: 2
+  render:
+    path: 0
+    resolutionFraction: 1
+    maximumStepCount: 60
+    minimumStepCount: 24
+    jitterStrength: 0
+  reconstruction:
+    bilateralRadius: 1
+    depthThreshold: 0.2
+  temporal:
+    enabled: 0
+    historyWeight: 0.82
+    cameraCutDistance: 2
+    neighborhoodClamp: 0.2
+    reactiveOpacityThreshold: 0.08
+  shading:
+    noiseMode: 0
+    detailOctaves: 4
+    lightingMode: 0
+    baseNoise: {fileID: 0}
+    detailNoise: {fileID: 0}
+  fluid:
+    updatesPerSecond: 60
+    maximumCatchUpSteps: 2
+    resolutionScale: 6
+    pressureIterations: 4
+    vorticityCadence: 1
+    interpolateDisplay: 0
+  compatibility:
+    renderGameCameras: 1
+    renderSceneView: 0
+    renderPreviewCameras: 0
+    renderReflectionCameras: 0
+    requireComputeShaders: 1
+    requireDepthTexture: 1
+    allowTemporalFallback: 1
+    allowFormatFallback: 1
+    fallbackOrder: []
+  budget:
+    targetMedianGpuMilliseconds: 3.53
+    targetP95GpuMilliseconds: 4.5

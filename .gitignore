@@ -1,0 +1,41 @@
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Bb]uild/
+[Bb]uilds/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# Local agent state and distributable build output
+.codex_work/
+.agents/
+exe/
+
+# IDE and generated project files
+.idea/
+.vs/
+.vscode/
+*.csproj
+*.sln
+*.sln.DotSettings.user
+
+# Unity crash reports and local metadata
+sysinfo.txt
+*.pidb
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Large local media/build files should be added selectively or via Git LFS
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Keep result directories available in the repository
+!Results/
+!Results/**/

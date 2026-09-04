@@ -1,0 +1,327 @@
+#pragma kernel Clear
+#pragma kernel ShiftDensity
+#pragma kernel ShiftVelocity
+#pragma kernel AdvectVelocity
+#pragma kernel AdvectDensity
+#pragma kernel InjectDensityMask
+#pragma kernel ApplySources
+#pragma kernel ApplyBoundary
+#pragma kernel ApplyBoundaryEdges
+#pragma kernel ApplyBuoyancy
+#pragma kernel ComputeCurl
+#pragma kernel ApplyVorticity
+#pragma kernel ComputeDivergence
+#pragma kernel JacobiPressure
+#pragma kernel SubtractGradient
+
+struct FluidSource
+{
+    float4x4 worldToLocal;
+    float4 positionRadius;
+    float4 velocityDensity;
+    float4 shapeDiffusionFlags;
+    float4 centerFlow;
+    float4 jetDirectionSpeed;
+    float4 jetSpreadEnabled;
+};
+
+StructuredBuffer<FluidSource> _Sources;
+int _SourceCount;
+int3 _Resolution;
+int3 _Shift;
+float2 _ScrollOffset;
+float3 _SimulationCenter;
+float3 _SolverRange;
+float _DeltaTime;
+float _DensityDissipation;
+float _VelocityDissipation;
+float _DensityLimit;
+float _VelocityLimit;
+float _ExternalForceScale;
+float _Vorticity;
+float _BoundaryDensity;
+int _BoundaryVelocityType;
+float3 _BoundaryVelocity;
+float3 _DensityMaskCenter;
+float3 _DensityMaskSize;
+float3 _DensityMaskScroll;
+float _DensityMaskScale;
+
+Texture2D<float> _DensityRead;
+RWTexture2D<float> _DensityWrite;
+Texture2D<float2> _VelocityRead;
+RWTexture2D<float2> _VelocityWrite;
+Texture2D<float> _PressureRead;
+RWTexture2D<float> _PressureWrite;
+Texture2D<float> _DivergenceRead;
+RWTexture2D<float> _DivergenceWrite;
+Texture2D<float> _CurlRead;
+RWTexture2D<float> _CurlWrite;
+RWTexture2D<float> _DensityInOut;
+RWTexture2D<float2> _VelocityInOut;
+Texture2D<float> _DensityMask2D;
+SamplerState sampler_linear_clamp;
+
+bool Inside(uint2 id)
+{
+    return id.x < (uint)_Resolution.x && id.y < (uint)_Resolution.y;
+}
+
+int2 ClampCoord(int2 id)
+{
+    return clamp(id, int2(0, 0), _Resolution.xy - 1);
+}
+
+float2 UvFromId(uint2 id)
+{
+    return (float2(id) + 0.5) / float2(_Resolution.xy);
+}
+
+float2 WorldXZ(uint2 id)
+{
+    return _SimulationCenter.xz + (UvFromId(id) - 0.5) * _SolverRange.xz;
+}
+
+float SourceInfluence(FluidSource source, float2 worldXZ)
+{
+    int shape = (int)round(source.shapeDiffusionFlags.x);
+    float radius = max(source.positionRadius.w, 0.001);
+    float influence = 0;
+    if (shape == 0)
+    {
+        float d = length(worldXZ - source.positionRadius.xz);
+        influence = saturate(1.0 - d / radius);
+    }
+    else
+    {
+        float3 worldPosition = float3(worldXZ.x, source.positionRadius.y, worldXZ.y);
+        float3 localPosition = mul(source.worldToLocal, float4(worldPosition, 1)).xyz;
+        float2 q = abs(localPosition.xz) * 2.0;
+        influence = saturate(1.0 - max(q.x, q.y));
+    }
+    return influence * influence * (3.0 - 2.0 * influence);
+}
+
+[numthreads(8, 8, 1)]
+void Clear(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    _DensityWrite[id.xy] = 0;
+    _VelocityWrite[id.xy] = 0;
+    _PressureWrite[id.xy] = 0;
+    _DivergenceWrite[id.xy] = 0;
+    _CurlWrite[id.xy] = 0;
+}
+
+[numthreads(8, 8, 1)]
+void ShiftDensity(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    int2 source = int2(id.xy) + _Shift.xy;
+    _DensityWrite[id.xy] = all(source >= 0) && all(source < _Resolution.xy) ? _DensityRead[source] : 0;
+}
+
+[numthreads(8, 8, 1)]
+void ShiftVelocity(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    int2 source = int2(id.xy) + _Shift.xy;
+    _VelocityWrite[id.xy] = all(source >= 0) && all(source < _Resolution.xy) ? _VelocityRead[source] : 0;
+}
+
+[numthreads(8, 8, 1)]
+void AdvectVelocity(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    float2 uv = UvFromId(id.xy);
+    float2 shiftedUv = uv + _ScrollOffset;
+    bool shiftedInside = all(shiftedUv >= 0) && all(shiftedUv <= 1);
+    float2 velocity = shiftedInside ? _VelocityRead.SampleLevel(sampler_linear_clamp, shiftedUv, 0) : 0;
+    float2 previousUv = shiftedUv - _DeltaTime * float2(velocity.x / _SolverRange.x, velocity.y / _SolverRange.z);
+    float2 advected = shiftedInside && all(previousUv >= 0) && all(previousUv <= 1)
+        ? _VelocityRead.SampleLevel(sampler_linear_clamp, previousUv, 0) * _VelocityDissipation
+        : 0;
+    float magnitude = length(advected);
+    _VelocityWrite[id.xy] = magnitude > _VelocityLimit ? advected * (_VelocityLimit / magnitude) : advected;
+}
+
+[numthreads(8, 8, 1)]
+void AdvectDensity(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    float2 uv = UvFromId(id.xy);
+    float2 velocity = _VelocityRead.SampleLevel(sampler_linear_clamp, uv, 0);
+    float2 previousUv = uv + _ScrollOffset
+        - _DeltaTime * float2(velocity.x / _SolverRange.x, velocity.y / _SolverRange.z);
+    float density = all(previousUv >= 0) && all(previousUv <= 1)
+        ? _DensityRead.SampleLevel(sampler_linear_clamp, previousUv, 0) * _DensityDissipation
+        : 0;
+    _DensityWrite[id.xy] = clamp(density, -_DensityLimit, _DensityLimit);
+}
+
+[numthreads(8, 8, 1)]
+void InjectDensityMask(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    float2 worldXZ = WorldXZ(id.xy);
+    float2 size = max(_DensityMaskSize.xz, 0.001);
+    float2 uv = (worldXZ - _DensityMaskCenter.xz) / size + 0.5 + _DensityMaskScroll.xz;
+    float mask = 0;
+    if (all(uv >= 0) && all(uv <= 1))
+        mask = _DensityMask2D.SampleLevel(sampler_linear_clamp, uv, 0);
+    _DensityWrite[id.xy] = clamp(_DensityRead[id.xy] + mask * _DensityMaskScale, -_DensityLimit, _DensityLimit);
+}
+
+[numthreads(8, 8, 1)]
+void ApplySources(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    float2 worldXZ = WorldXZ(id.xy);
+    float density = _DensityRead[id.xy];
+    float2 velocity = _VelocityRead[id.xy];
+    [loop]
+    for (int index = 0; index < _SourceCount; index++)
+    {
+        FluidSource source = _Sources[index];
+        float influence = SourceInfluence(source, worldXZ);
+        if (influence <= 0) continue;
+        uint flags = (uint)round(source.shapeDiffusionFlags.z);
+        float2 radial = worldXZ - source.positionRadius.xz;
+        radial = length(radial) > 1e-5 ? normalize(radial) : float2(1, 0);
+        if ((flags & 1u) != 0u)
+        {
+            float verticalFlow = source.velocityDensity.y * source.centerFlow.w;
+            float diffusionFlow = source.shapeDiffusionFlags.y * (1.0 + abs(source.velocityDensity.w));
+            float2 sourceVelocity = source.velocityDensity.xz + radial * (verticalFlow + diffusionFlow);
+            if (source.jetSpreadEnabled.y > 0.5)
+            {
+                float2 jetDirection = source.jetDirectionSpeed.xz;
+                jetDirection = length(jetDirection) > 1e-5 ? normalize(jetDirection) : float2(0, 1);
+                float2 relative = worldXZ - source.positionRadius.xz;
+                float2 radialOffset = relative - jetDirection * dot(relative, jetDirection);
+                float2 spreadDirection = length(radialOffset) > 1e-5 ? normalize(radialOffset) : radial;
+                sourceVelocity += jetDirection * source.jetDirectionSpeed.w
+                    + spreadDirection * source.jetSpreadEnabled.x;
+            }
+            velocity += sourceVelocity * influence * _ExternalForceScale * _DeltaTime;
+        }
+        if ((flags & 2u) != 0u)
+            density += source.velocityDensity.w * influence * _DeltaTime * 4.0;
+    }
+    float speed = length(velocity);
+    _VelocityWrite[id.xy] = speed > _VelocityLimit ? velocity * (_VelocityLimit / speed) : velocity;
+    _DensityWrite[id.xy] = clamp(density, -_DensityLimit, _DensityLimit);
+}
+
+[numthreads(8, 8, 1)]
+void ApplyBoundary(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    float density = _DensityRead[id.xy];
+    float2 velocity = _VelocityRead[id.xy];
+    bool boundary = id.x == 0 || id.y == 0 || id.x == (uint)(_Resolution.x - 1) || id.y == (uint)(_Resolution.y - 1);
+    if (boundary)
+    {
+        density = _BoundaryDensity;
+        if (_BoundaryVelocityType == 0)
+            velocity = 0;
+        else
+            velocity = _BoundaryVelocity.xz;
+    }
+    _DensityWrite[id.xy] = density;
+    _VelocityWrite[id.xy] = velocity;
+}
+
+// Only four edge rows/columns need boundary writes. The previous kernel copied
+// the entire field to a second pair of textures every frame.
+[numthreads(64, 1, 1)]
+void ApplyBoundaryEdges(uint3 id : SV_DispatchThreadID)
+{
+    uint index = id.x;
+    float2 velocity = _BoundaryVelocity.xz;
+    if (_BoundaryVelocityType == 0)
+        velocity = 0;
+
+    if (index < (uint)_Resolution.x)
+    {
+        _DensityInOut[uint2(index, 0)] = _BoundaryDensity;
+        _VelocityInOut[uint2(index, 0)] = velocity;
+        _DensityInOut[uint2(index, _Resolution.y - 1)] = _BoundaryDensity;
+        _VelocityInOut[uint2(index, _Resolution.y - 1)] = velocity;
+    }
+    if (index > 0 && index < (uint)(_Resolution.y - 1))
+    {
+        _DensityInOut[uint2(0, index)] = _BoundaryDensity;
+        _VelocityInOut[uint2(0, index)] = velocity;
+        _DensityInOut[uint2(_Resolution.x - 1, index)] = _BoundaryDensity;
+        _VelocityInOut[uint2(_Resolution.x - 1, index)] = velocity;
+    }
+}
+
+[numthreads(8, 8, 1)]
+void ApplyBuoyancy(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    _VelocityWrite[id.xy] = _VelocityRead[id.xy];
+}
+
+[numthreads(8, 8, 1)]
+void ComputeCurl(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    int2 p = int2(id.xy);
+    float vyR = _VelocityRead[ClampCoord(p + int2(1, 0))].y;
+    float vyL = _VelocityRead[ClampCoord(p - int2(1, 0))].y;
+    float vxT = _VelocityRead[ClampCoord(p + int2(0, 1))].x;
+    float vxB = _VelocityRead[ClampCoord(p - int2(0, 1))].x;
+    _CurlWrite[id.xy] = 0.5 * ((vyR - vyL) - (vxT - vxB));
+}
+
+[numthreads(8, 8, 1)]
+void ApplyVorticity(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    int2 p = int2(id.xy);
+    float c = _CurlRead[p];
+    float2 gradient = 0.5 * float2(
+        abs(_CurlRead[ClampCoord(p + int2(1, 0))]) - abs(_CurlRead[ClampCoord(p - int2(1, 0))]),
+        abs(_CurlRead[ClampCoord(p + int2(0, 1))]) - abs(_CurlRead[ClampCoord(p - int2(0, 1))]));
+    gradient /= max(length(gradient), 1e-5);
+    float2 force = float2(gradient.y, -gradient.x) * c * _Vorticity;
+    _VelocityWrite[id.xy] = _VelocityRead[p] + force * _DeltaTime;
+}
+
+[numthreads(8, 8, 1)]
+void ComputeDivergence(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    int2 p = int2(id.xy);
+    float vxR = _VelocityRead[ClampCoord(p + int2(1, 0))].x;
+    float vxL = _VelocityRead[ClampCoord(p - int2(1, 0))].x;
+    float vyT = _VelocityRead[ClampCoord(p + int2(0, 1))].y;
+    float vyB = _VelocityRead[ClampCoord(p - int2(0, 1))].y;
+    _DivergenceWrite[id.xy] = 0.5 * ((vxR - vxL) + (vyT - vyB));
+}
+
+[numthreads(8, 8, 1)]
+void JacobiPressure(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    int2 p = int2(id.xy);
+    float sum = _PressureRead[ClampCoord(p + int2(1, 0))]
+              + _PressureRead[ClampCoord(p - int2(1, 0))]
+              + _PressureRead[ClampCoord(p + int2(0, 1))]
+              + _PressureRead[ClampCoord(p - int2(0, 1))];
+    _PressureWrite[id.xy] = (sum - _DivergenceRead[p]) * 0.25;
+}
+
+[numthreads(8, 8, 1)]
+void SubtractGradient(uint3 id : SV_DispatchThreadID)
+{
+    if (!Inside(id.xy)) return;
+    int2 p = int2(id.xy);
+    float2 gradient = 0.5 * float2(
+        _PressureRead[ClampCoord(p + int2(1, 0))] - _PressureRead[ClampCoord(p - int2(1, 0))],
+        _PressureRead[ClampCoord(p + int2(0, 1))] - _PressureRead[ClampCoord(p - int2(0, 1))]);
+    _VelocityWrite[id.xy] = _VelocityRead[p] - gradient;
+}
