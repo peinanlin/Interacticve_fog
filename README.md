@@ -13,6 +13,7 @@
 <p align="center">
   <img src="Img/交互效果.gif" width="800" alt="交互式体积雾效果演示">
 </p>
+
 [直接打开或下载交互效果 GIF](Img/交互效果.gif)
 
 ## 交互纹理实时 Debug
