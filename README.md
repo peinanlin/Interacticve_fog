@@ -1,66 +1,66 @@
-# Interacter Fog
+# 交互体积雾
 
-Unity project for interactive fog rendering and visual-quality comparison.
+基于 Unity 的交互式体积雾渲染与多画质效果对比项目。
 
-## Overview
+## 项目简介
 
-This project explores interactive fog effects, including scene interaction and comparisons across different rendering-quality settings. Screenshots, GIFs, and other result media will be collected in [`Results/`](Results/).
+本项目研究交互式体积雾效果，包括场景交互，以及不同渲染画质设置下的性能与视觉表现对比。截图、GIF 和其他结果素材将集中放在 [`Results/`](Results/) 中。
 
-## Highlights
+## 项目特点
 
-- Interactive fog effects in Unity
-- Configurable rendering and visual-quality settings
-- Side-by-side quality comparison results
-- Space for demonstration images and GIFs
+- Unity 交互式体积雾效果
+- 可配置的渲染和画质设置
+- 多画质并排对比
+- 支持放置演示截图和 GIF
 
-## Requirements
+## 环境要求
 
-- Unity **2022.3.62f3c1** (recorded in `ProjectSettings/ProjectVersion.txt`)
-- Universal Render Pipeline (URP)
+- Unity **2022.3.62f3c1**（版本记录于 `ProjectSettings/ProjectVersion.txt`）
+- Universal Render Pipeline（URP）
 
-Open the project through Unity Hub and allow Unity to restore packages from `Packages/manifest.json`.
+请通过 Unity Hub 打开项目，并等待 Unity 根据 `Packages/manifest.json` 自动恢复依赖包。
 
-## Repository structure
+## 仓库结构
 
 ```text
-Assets/                 Unity scenes, scripts, materials, and resources
-Docs/                   Project notes and documentation
-Img/                    Quality comparison screenshots
-Editor/                 Editor-only scripts and tooling
-Packages/               Unity package manifest
-ProjectSettings/        Unity project configuration
-Results/                Interaction demos, quality comparisons, and GIFs
+Assets/                 Unity 场景、脚本、材质和资源
+Docs/                   项目笔记和相关文档
+Img/                    多画质效果对比截图
+Editor/                 仅用于编辑器的脚本和工具
+Packages/               Unity 包管理清单
+ProjectSettings/        Unity 项目配置
+Results/                交互演示、画质对比和 GIF
 ```
 
-## Results
+## 实验结果
 
-### Interactive effects
+### 交互效果
 
-Add screenshots or GIFs to [`Results/interaction/`](Results/interaction/) and embed them here, for example:
+可以将截图或 GIF 放入 [`Results/interaction/`](Results/interaction/)，并按下面的方式嵌入：
 
 ```markdown
-![Interactive fog demo](Results/interaction/your-demo.gif)
+![交互式体积雾演示](Results/interaction/your-demo.gif)
 ```
 
-### Multi-quality comparison
+### 多画质对比
 
-| | High / 高画质 | Medium / 中画质 | Low / 低画质 |
+| | 高画质 | 中画质 | 低画质 |
 | --- | --- | --- | --- |
-| **Average GPU frame time / GPU 平均耗时** | **6.772 ms** | **2.257 ms** | **1.523 ms** |
-| Rendering preview / 渲染表现 | ![High-quality rendering](Img/高画质表现.png) | ![Medium-quality rendering](Img/中画质表现.png) | ![Low-quality rendering](Img/低画质表现.png) |
+| **GPU 平均帧耗时** | **6.772 ms** | **2.257 ms** | **1.523 ms** |
+| 渲染表现 | ![高画质渲染表现](Img/高画质表现.png) | ![中画质渲染表现](Img/中画质表现.png) | ![低画质渲染表现](Img/低画质表现.png) |
 
-Measured with Unity Profiler in Editor Play Mode. Each preset was captured for 300 frames; GPU averages use **298 valid GPU frames**, excluding the final two frames without GPU timing data. Lower is better. These values describe the **total GPU frame time**, including the scene and render pipeline, rather than fog-only time or standalone-build FPS. Screenshots are provided as visual references; their dimensions are not the benchmark output resolution.
+数据使用 Unity Profiler 在编辑器 Play Mode 下采集。每档画质采集 300 帧；GPU 平均值使用 **298 个有效 GPU 帧**计算，排除了最后两个没有 GPU 计时数据的帧。数值越低表示 GPU 耗时越少。这里的数值是包含场景和渲染管线在内的**整帧 GPU 耗时**，不是单独的体积雾耗时，也不是独立运行版本的 FPS。截图仅用于展示视觉表现，图片尺寸不代表基准测试时的输出分辨率。
 
-*Image note: the supplied Medium and Low PNG files are currently identical. Separate captures are needed to show their visual differences.*
+*图片说明：目前提供的中画质和低画质 PNG 文件内容完全相同，后续需要替换为分别采集的截图，才能体现两档画质的视觉差异。*
 
-### GIFs and other media
+### GIF 和其他素材
 
-Place GIFs in [`Results/gif/`](Results/gif/). Keep large videos or build artifacts outside Git, or publish them through GitHub Releases/LFS when needed.
+可以将 GIF 放入 [`Results/gif/`](Results/gif/)。较大的视频或构建产物建议放在 GitHub Releases，或使用 Git LFS 管理。
 
-## Status
+## 项目状态
 
-The repository is being prepared for public release. Experimental results and performance measurements will be added as they are finalized.
+仓库正在准备公开发布。实验结果和性能测试数据会在确认后持续补充。
 
-## License
+## 许可证
 
-License to be added.
+待补充。
