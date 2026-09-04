@@ -6,6 +6,34 @@
 
 本项目研究交互式体积雾效果，包括场景交互，以及不同渲染画质设置下的性能与视觉表现对比。截图、GIF 和其他结果素材将集中放在 [`Results/`](Results/) 中。
 
+## 交互效果
+
+下面是项目中的交互效果演示：
+
+<p align="center">
+  <img src="Img/交互效果.gif" width="800" alt="交互式体积雾效果演示">
+</p>
+
+[直接打开或下载交互效果 GIF](Img/交互效果.gif)
+
+## 交互纹理实时 Debug
+
+Debug 工具用于实时查看交互过程中保存的流体纹理，帮助确认交互数据是否正确写入并参与体积雾渲染。
+
+<p align="center">
+  <img src="Img/debug工具.png" width="800" alt="交互纹理实时 Debug 工具">
+</p>
+
+Debug 窗口可以预览 Density（密度）、Velocity（速度）、ExternalForce（外力）、Pressure（压力）和 Curl（旋度）等纹理，也可以调整预览尺寸、交互源高度和 3D 切片位置。
+
+## 雾的渲染表现
+
+下图展示体积雾的整体渲染表现：
+
+<p align="center">
+  <img src="Img/雾的渲染.png" width="800" alt="体积雾渲染表现">
+</p>
+
 ## 项目特点
 
 - Unity 交互式体积雾效果
@@ -33,38 +61,6 @@ Results/                交互演示、画质对比和 GIF
 ```
 
 ## 实验结果
-
-### 交互效果
-
-下面是项目中的交互效果演示：
-
-<p align="center">
-  <img src="Img/交互效果.gif" width="800" alt="交互式体积雾效果演示">
-</p>
-
-后续截图或 GIF 可以放入 [`Results/interaction/`](Results/interaction/)，并按下面的方式嵌入：
-
-```markdown
-![交互式体积雾演示](Results/interaction/your-demo.gif)
-```
-
-### 交互纹理实时 Debug
-
-下面的 Debug 工具用于实时查看交互过程中保存的流体纹理，帮助确认交互数据是否正确写入并参与体积雾渲染：
-
-<p align="center">
-  <img src="Img/debug工具.png" width="800" alt="交互纹理实时 Debug 工具">
-</p>
-
-Debug 窗口可以预览 **Density（密度）**、**Velocity（速度）**、**ExternalForce（外力）**、**Pressure（压力）** 和 **Curl（旋度）** 等纹理。通过调整预览尺寸、跟随交互源高度和 3D 切片位置，可以检查交互纹理在不同位置和切片下的实时变化；底部的交互源类型选项用于筛选要显示的交互来源。
-
-### 雾的渲染表现
-
-下图展示体积雾的整体渲染表现：
-
-<p align="center">
-  <img src="Img/雾的渲染.png" width="800" alt="体积雾渲染表现">
-</p>
 
 ### 多画质对比
 
