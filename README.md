@@ -15,7 +15,7 @@ This project explores interactive fog effects, including scene interaction and c
 
 ## Requirements
 
-- Unity **2022.3.XXfX** or the editor version recorded in `ProjectSettings/ProjectVersion.txt`
+- Unity **2022.3.62f3c1** (recorded in `ProjectSettings/ProjectVersion.txt`)
 - Universal Render Pipeline (URP)
 
 Open the project through Unity Hub and allow Unity to restore packages from `Packages/manifest.json`.
@@ -25,6 +25,7 @@ Open the project through Unity Hub and allow Unity to restore packages from `Pac
 ```text
 Assets/                 Unity scenes, scripts, materials, and resources
 Docs/                   Project notes and documentation
+Img/                    Quality comparison screenshots
 Editor/                 Editor-only scripts and tooling
 Packages/               Unity package manifest
 ProjectSettings/        Unity project configuration
@@ -43,13 +44,14 @@ Add screenshots or GIFs to [`Results/interaction/`](Results/interaction/) and em
 
 ### Multi-quality comparison
 
-Add comparison images to [`Results/quality-comparison/`](Results/quality-comparison/) and describe the settings used:
-
-| Preset | Resolution | Fog settings | Notes |
+| | High / 高画质 | Medium / 中画质 | Low / 低画质 |
 | --- | --- | --- | --- |
-| High | TBD | TBD | TBD |
-| Medium | TBD | TBD | TBD |
-| Low | TBD | TBD | TBD |
+| **Average GPU frame time / GPU 平均耗时** | **6.772 ms** | **2.257 ms** | **1.523 ms** |
+| Rendering preview / 渲染表现 | ![High-quality rendering](Img/高画质表现.png) | ![Medium-quality rendering](Img/中画质表现.png) | ![Low-quality rendering](Img/低画质表现.png) |
+
+Measured with Unity Profiler in Editor Play Mode. Each preset was captured for 300 frames; GPU averages use **298 valid GPU frames**, excluding the final two frames without GPU timing data. Lower is better. These values describe the **total GPU frame time**, including the scene and render pipeline, rather than fog-only time or standalone-build FPS. Screenshots are provided as visual references; their dimensions are not the benchmark output resolution.
+
+*Image note: the supplied Medium and Low PNG files are currently identical. Separate captures are needed to show their visual differences.*
 
 ### GIFs and other media
 
