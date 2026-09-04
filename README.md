@@ -43,7 +43,7 @@ Add screenshots or GIFs to [`Results/interaction/`](Results/interaction/) and em
 ```
 
 ### Multi-quality comparison
-
+下面不同画质对比可能不是很明显，可点击图片放大看，低中画质由于分辨率的降低，明显能看到锯齿形状
 | | High / 高画质 | Medium / 中画质 | Low / 低画质 |
 | --- | --- | --- | --- |
 | **Average GPU frame time / GPU 平均耗时** | **6.772 ms** | **2.257 ms** | **1.523 ms** |
