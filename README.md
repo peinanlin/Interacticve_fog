@@ -6,11 +6,27 @@
 
 本项目实现交互式体积雾效果，包括场景交互，以及不同渲染画质设置下的性能与视觉表现对比。
 
+## unity版本
+
+- Unity **2022.3.62f3c1**
+- Universal Render Pipeline（URP）
+
 ## 项目特点
 
 - 体积雾
 - 流体模拟（欧拉流体--实现2D求解器与3D求解器）
 - 分档画质
+
+## 雾的渲染表现
+
+下图展示体积雾的整体渲染表现：
+
+<p align="center">
+  <img src="Img/雾的渲染.png" width="800" alt="体积雾渲染表现">
+</p>
+
+
+
 
 ## 交互效果
 
@@ -32,20 +48,6 @@ Debug 工具用于实时查看交互过程中保存的流体纹理，帮助确�
 
 Debug 窗口可以预览 Density（密度）、Velocity（速度）、ExternalForce（外力）、Pressure（压力）和 Curl（旋度）等纹理，也可以调整预览尺寸、交互源高度和 3D 切片位置。
 
-## 雾的渲染表现
-
-下图展示体积雾的整体渲染表现：
-
-<p align="center">
-  <img src="Img/雾的渲染.png" width="800" alt="体积雾渲染表现">
-</p>
-
-
-
-## unity版本
-
-- Unity **2022.3.62f3c1**
-- Universal Render Pipeline（URP）
 
 ## 仓库结构
 
